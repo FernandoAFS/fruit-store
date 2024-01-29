@@ -1,0 +1,90 @@
+[project]
+dynamic = ["version"]
+name = "fruit-store"
+authors = [
+    { name="Fernando A Fernández", email="fernando.andeca@gmail.com" },
+]
+description = "Default template for PDM package"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+license = {text = "MIT"}
+dependencies = [
+    "grpcio>=1.60.0",
+    "typer>=0.9.0",
+    "protobuf>=4.25.2",
+]
+
+[project.scripts]
+fruit-store = "fruit_store.cli.app:app"
+
+
+[tool.setuptools.packages.find]
+# All the following settings are optional:
+where = ["."]  # ["."] by default
+include = ["fruit_store*"]  # ["*"] by default
+exclude = ["test"]  # empty by default
+namespaces = false  # true by default
+
+[tool.setuptools.dynamic]
+version = {attr = "fruit_store.__version__"}
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.1.9",
+    "pytest>=7.4.3",
+    "pytest-async>=0.1.1",
+    "pyright>=1.1.343",
+    "coverage>=7.4.0",
+]
+build = [
+    "nuitka>=1.9.5",
+    "build>=1.0.3",
+]
+grpc = [
+    "grpcio-tools>=1.60.0",
+]
+
+
+[build-system]
+requires = ["setuptools>=64", "wheel", "nuitka", "toml"]
+build-backend = "nuitka.distutils.Build"
+
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]
+asyncio_mode="auto"
+# required_plugins = pytest-asyncio
+
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 20
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

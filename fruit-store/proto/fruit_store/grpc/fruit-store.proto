@@ -1,0 +1,49 @@
+
+syntax = "proto3";
+
+package fruit_store;
+
+message Empty{
+}
+
+service Server{
+    rpc PutSale(SaleEvent) returns (Empty);
+    rpc GetReport(ReportRequest) returns (ReportResponse);
+
+    // UPDATE TO INCLUDE FULL HEALTHCHECK DATA
+    // https://inadarei.github.io/rfc-healthcheck/
+    rpc Healthcheck(Empty) returns (Empty);
+}
+
+message SaleEvent{
+    uint64 date = 1;
+    uint32 quantity = 2;
+    string item = 3;
+    uint32 price = 4;
+}
+
+message SaleReply{
+    int32 code = 1;
+}
+
+message ReportRequest{
+    optional uint64 date0 = 1;
+    optional uint64 datef = 2;
+}
+
+message ReportResponse{
+    map<string, ReportItem> items = 3;
+}
+
+message ReportItem{
+    uint64 totalQuantity = 1;
+    double averagePerSale = 2;
+    uint64 totalRevenue = 3;
+    map<string, ReportItemMonthly> monthly = 4;
+}
+
+message ReportItemMonthly{
+    uint64 totalQuantity = 1;
+    double averagePerSale = 2;
+    uint64 totalRevenue = 3;
+}
