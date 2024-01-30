@@ -46,7 +46,7 @@ class MemMonthItemReporting:
     def to_month_report(self) -> "report_annot.ItemMonthlyReportDict":
         return {
             "total_quantity": self.quantity,
-            "average_per_sale": self.sales // self.quantity,  # TO FORCE INT
+            "average_per_sale": self.quantity // self.sales ,  # TO FORCE INT
             "total_revenue": self.revenue,
         }
 
@@ -67,7 +67,7 @@ def item_report(
     total_quantity: int = sum(map(op.attrgetter("quantity"), vs))
     total_sales: int = sum(map(op.attrgetter("sales"), vs))
     total_revenue: float = sum(map(op.attrgetter("revenue"), vs))
-    average_per_sale: int = total_sales // total_quantity
+    average_per_sale: int = total_quantity // total_sales
 
     # 2. Monthly values
     dates_str = map(lambda d: d.strftime("%Y-%m"), data.keys())
@@ -77,7 +77,7 @@ def item_report(
         "total_quantity": total_quantity,
         "average_per_sale": average_per_sale,
         "total_revenue": total_revenue,
-        "monthly_results": dict(zip(dates_str, monthly_reports, strict=True)),
+        "monthly": dict(zip(dates_str, monthly_reports, strict=True)),
     }
 
 

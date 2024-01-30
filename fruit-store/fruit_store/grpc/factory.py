@@ -1,13 +1,22 @@
+import collections
 import dataclasses as dtcs
 import datetime as dt
 import math
+import pprint
 import typing as t
+import json
+
+from google.protobuf.json_format import MessageToDict
+
+from fruit_store.util import casing
 
 from . import fruit_store_pb2
 
 if t.TYPE_CHECKING:
     from fruit_store.annot import reporting as report_annot
     from fruit_store.annot.fruit_store.grpc import fruit_store_pb2 as msg_annot
+
+T = t.TypeVar("T")
 
 
 def dt_to_ts(date: "dt.datetime | int") -> int:
@@ -26,6 +35,61 @@ def num_to_price(price: "int | float") -> int:
         case float():
             return math.ceil(price * 100)
     raise TypeError(f"dates must be either float or int, not {type(price)}")
+
+
+@dtcs.dataclass(frozen=True)
+class ReportResponseModel:
+    report_dict: "report_annot.ReportDict"
+
+    def to_grpc(self) -> "msg_annot.ReportResponse":
+        return report_response(self.report_dict)
+
+    @staticmethod
+    def from_grpc(resp: "msg_annot.ReportResponse") -> "ReportResponseModel":
+        def rec_camel_to_snake(d: "T") -> "T":
+            match d:
+                # TODO: IMPROVE THIS AND CHECK FOR MAPPING INSTEAD.
+                case dict():
+                    ks = d.keys()
+                    vs = d.values()
+                    snake_case: map[str] = map(casing.camel_to_snake, ks)
+                    conv_values = map(rec_camel_to_snake, vs)
+                    return dict(zip(snake_case, conv_values, strict=False))  # type: ignore
+
+            return d
+        resp_d = MessageToDict(resp)
+        if len(resp_d) <= 0:
+            return ReportResponseModel({})
+        d = rec_camel_to_snake(resp_d["items"])
+        return ReportResponseModel(report_dict=d)
+
+    def __str__(self) -> str:
+        def present_month_report(d: "report_annot.ItemMonthlyReportDict"):
+            od = collections.OrderedDict()
+            od["total_quantity"] = d["total_quantity"]
+            od["average_per_sale"] = d["average_per_sale"]
+            od["total_revenue"] = d["total_revenue"]
+            return od
+
+        def present_item_report(d: "report_annot.ItemReportDict"):
+            od = collections.OrderedDict()
+            od["total_quantity"] = d["total_quantity"]
+            od["average_per_sale"] = d["average_per_sale"]
+            od["total_revenue"] = d["total_revenue"]
+
+            months = d["monthly"].keys()
+            month_reports = map(present_month_report, d["monthly"].values())
+
+            od["monthly"] = dict(zip(months, month_reports, strict=True))
+
+            return od
+
+        items = self.report_dict.keys()
+        item_reports = self.report_dict.values()
+        present_reports = map(present_item_report, item_reports)
+
+        present_d = dict(zip(items, present_reports, strict=True))
+        return json.dumps(present_d, indent=4)
 
 
 @dtcs.dataclass(frozen=True)
@@ -109,8 +173,9 @@ def report_response(d: "report_annot.ReportDict") -> "msg_annot.ReportResponse":
     for item, item_report in d.items():
         response.items[item].totalQuantity = item_report["total_quantity"]
         response.items[item].averagePerSale = item_report["average_per_sale"]
+
         response.items[item].totalRevenue = math.floor(item_report["total_revenue"])
-        for month, monthly_report in item_report["monthly_results"].items():
+        for month, monthly_report in item_report["monthly"].items():
             response.items[item].monthly[month].totalQuantity = monthly_report[
                 "total_quantity"
             ]

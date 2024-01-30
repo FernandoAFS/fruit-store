@@ -10,7 +10,7 @@ class ItemReportDict(t.TypedDict):
     total_quantity: int
     average_per_sale: int
     total_revenue: float
-    monthly_results: t.Mapping[str, "ItemMonthlyReportDict"]
+    monthly: t.Mapping[str, "ItemMonthlyReportDict"]
 
 
 class ItemMonthlyReportDict(t.TypedDict):

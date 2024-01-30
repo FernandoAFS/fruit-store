@@ -62,10 +62,10 @@ class ReportItem(_message.Message):
     TOTALREVENUE_FIELD_NUMBER: _ClassVar[int]
     MONTHLY_FIELD_NUMBER: _ClassVar[int]
     totalQuantity: int
-    averagePerSale: float
+    averagePerSale: int
     totalRevenue: int
     monthly: _containers.MessageMap[str, ReportItemMonthly]
-    def __init__(self, totalQuantity: _Optional[int] = ..., averagePerSale: _Optional[float] = ..., totalRevenue: _Optional[int] = ..., monthly: _Optional[_Mapping[str, ReportItemMonthly]] = ...) -> None: ...
+    def __init__(self, totalQuantity: _Optional[int] = ..., averagePerSale: _Optional[int] = ..., totalRevenue: _Optional[int] = ..., monthly: _Optional[_Mapping[str, ReportItemMonthly]] = ...) -> None: ...
 
 class ReportItemMonthly(_message.Message):
     __slots__ = ("totalQuantity", "averagePerSale", "totalRevenue")
@@ -73,6 +73,6 @@ class ReportItemMonthly(_message.Message):
     AVERAGEPERSALE_FIELD_NUMBER: _ClassVar[int]
     TOTALREVENUE_FIELD_NUMBER: _ClassVar[int]
     totalQuantity: int
-    averagePerSale: float
+    averagePerSale: int
     totalRevenue: int
-    def __init__(self, totalQuantity: _Optional[int] = ..., averagePerSale: _Optional[float] = ..., totalRevenue: _Optional[int] = ...) -> None: ...
+    def __init__(self, totalQuantity: _Optional[int] = ..., averagePerSale: _Optional[int] = ..., totalRevenue: _Optional[int] = ...) -> None: ...

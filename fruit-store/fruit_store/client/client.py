@@ -28,11 +28,11 @@ class FruitStoreClient:
     async def request_report(
         self,
         request: "protobuf_factory.ReportRequestModel",
-    ) -> "msg_annot.ReportResponse":
+    ) -> "protobuf_factory.ReportResponseModel":
         async with grpc.aio.insecure_channel(self.host) as channel:
             stub = fruit_store_pb2_grpc.ServerStub(channel)
             response = await stub.GetReport(request.to_grpc())
-        return response
+        return protobuf_factory.ReportResponseModel.from_grpc(response)
 
     # TODO: IMPROVE ON RETURN TYPE
     async def healthcheck(self) -> bool:

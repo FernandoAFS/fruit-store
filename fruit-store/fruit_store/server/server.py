@@ -42,7 +42,9 @@ class FrutStoreServer(fruit_store_pb2_grpc.ServerServicer):
         items = await self.report_generator.generate_report(
             request.date0, request.date0
         )
-        return grpc_factory.report_response(items)
+        items_wrapper = grpc_factory.ReportResponseModel(items)
+        grpc_response = items_wrapper.to_grpc()
+        return grpc_response
 
     async def Healthcheck(
         self, request: "msg_annot.Empty", context: "grpc.RpcContext"

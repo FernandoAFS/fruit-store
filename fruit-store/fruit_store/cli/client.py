@@ -96,7 +96,6 @@ def request_report(
     report = asyncio.run(client_.request_report(request))
 
     # TODO: PRETTY PRINT THE REPORT
-    print(type(report))
     print(report)
     return
 
