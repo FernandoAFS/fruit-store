@@ -105,7 +105,6 @@ class MemoryStorage:
         self, date_0: "dt.datetime | None" = None, date_f: "dt.datetime | None" = None
     ) -> "report_annot.ReportDict":
         # TODO: INCLUDE DATE FILTERING
-
         items = self.accum_.keys()
         item_reports = map(item_report, self.accum_.values())
 

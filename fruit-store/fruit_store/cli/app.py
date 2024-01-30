@@ -23,13 +23,15 @@ add_client_app()
 
 @app.command()
 def version():
+    "Print out the version"
     from fruit_store import __version__
 
-    print(f"version: {__version__}")
+    print(f"{__version__}")
 
 
 @app.command()
 def server(host: str = "[::]:50051"):
+    "Spawns server daemon"
     cli_server.server(host)
 
 

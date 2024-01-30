@@ -22,7 +22,7 @@ class ItemMonthlyReportDict(t.TypedDict):
 class ReportFactoryProtocol(t.Protocol):
     async def generate_report(
         self, date_0: "dt.datetime | None" = None, date_f: "dt.datetime | None" = None
-    ) -> "ItemReportDict":
+    ) -> "ReportDict":
         ...
 
     async def healthcheck(self) -> bool:

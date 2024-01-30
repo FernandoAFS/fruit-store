@@ -2,7 +2,13 @@ import asyncio
 import dataclasses as dtcs
 import typing as t
 
-from fruit_store.grpc import fruit_store_pb2, fruit_store_pb2_grpc
+from fruit_store.grpc import (
+    factory as grpc_factory,
+)
+from fruit_store.grpc import (
+    fruit_store_pb2,
+    fruit_store_pb2_grpc,
+)
 
 if t.TYPE_CHECKING:
     import grpc
@@ -26,7 +32,8 @@ class FrutStoreServer(fruit_store_pb2_grpc.ServerServicer):
     async def PutSale(
         self, request: "msg_annot.SaleEvent", context: "grpc.RpcContext"
     ) -> "msg_annot.Empty":
-        await self.data_collector.put_purchrase_event(request)
+        event = grpc_factory.PurchaseEventModel.from_grpc(request)
+        await self.data_collector.put_purchrase_event(event)
         return fruit_store_pb2.Empty()  # type: ignore
 
     async def GetReport(
@@ -35,7 +42,7 @@ class FrutStoreServer(fruit_store_pb2_grpc.ServerServicer):
         items = await self.report_generator.generate_report(
             request.date0, request.date0
         )
-        return fruit_store_pb2.ReportResponse(items=items)  # type: ignore
+        return grpc_factory.report_response(items)
 
     async def Healthcheck(
         self, request: "msg_annot.Empty", context: "grpc.RpcContext"
