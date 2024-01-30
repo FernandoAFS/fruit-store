@@ -15,14 +15,11 @@ from fruit_store.grpc import (
 if t.TYPE_CHECKING:
     from fruit_store.annot.fruit_store.grpc import fruit_store_pb2 as msg_annot
 
-# MOVE TO ENV.
-HOST = "localhost:50051"
-
 
 # TODO: INCLUDE
 @dtcs.dataclass(frozen=True)
 class FruitStoreClient:
-    host: str = HOST
+    host: str
 
     async def put_sale(
         self, date: "dt.datetime | int", quantity: int, item: str, price: float | int
@@ -48,3 +45,6 @@ class FruitStoreClient:
             stub = fruit_store_pb2_grpc.ServerStub(channel)
             await stub.Healthcheck(fruit_store_pb2.Empty())
         return True
+
+def default_fruit_store_client_factory(host: str):
+    ...

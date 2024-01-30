@@ -1,9 +1,8 @@
 # MISC
 
 PROJECT_NAME:=Fruit Store
-VERSION:=0 #$(shell git describe --tags --abbrev=0)
+VERSION:=$(shell git describe --tags --abbrev=0)
 PACKAGE:=fruit_store
-TEST_PACKAGE:=fruit_store_test/
 
 # TERMINAL
 BOLD:=$(shell tput bold)
@@ -53,3 +52,6 @@ FILE_TARBALL:=$(DIR_TARBALL)/fruit-store-$(VERSION).tar
 DIR_DOCKER_EXPORT=dist/docker-export
 FILE_DOCKER_EXPORT_SERVER:=$(DIR_DOCKER_EXPORT)/fruit-store-server-$(VERSION).tar
 FILE_DOCKER_EXPORT_CLIENT:=$(DIR_DOCKER_EXPORT)/fruit-store-client-$(VERSION).tar
+
+# TESTING
+UNIT_TEST_PACKAGE:=tests/unitary

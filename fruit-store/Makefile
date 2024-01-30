@@ -21,7 +21,9 @@ help:
 	@echo "- $(BOLD)lynt$(BOLD_STOP): Runs linter on code"
 	@echo "- $(BOLD)fmt$(BOLD_STOP): Runs formatter"
 	@echo "- $(BOLD)type$(BOLD_STOP): Runs format checks"
-	@echo "- $(BOLD)test$(BOLD_STOP): Runs all tests"
+	@echo ""
+	@echo "$(UNDERLINE)$(BOLD)Testing:$(UNDERLINE_STOP)$(BOLD_STOP): Run all tests"
+	@echo "- $(BOLD)unit-test$(BOLD_STOP): Runs unitary tests"
 
 # MISC
 
@@ -76,5 +78,5 @@ fmt:
 type:
 	$(CMD_TYPE) $(PACKAGE)
 
-test:
-	$(CMD_TEST) $(TEST_PACKAGE)
+unit-test:
+	$(CMD_TEST) $(UNIT_TEST_PACKAGE)

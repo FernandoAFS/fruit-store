@@ -23,6 +23,15 @@ dependencies = [
 fruit-store = "fruit_store.cli.app:app"
 
 
+[project.optional-dependencies]
+sql = [
+    "sqlalchemy>=2.0.25",
+]
+sqlite = [
+    "aiosqlite>=0.19.0",
+]
+
+
 [tool.setuptools.packages.find]
 # All the following settings are optional:
 where = ["."]  # ["."] by default
@@ -30,26 +39,25 @@ include = ["fruit_store*"]  # ["*"] by default
 exclude = ["test"]  # empty by default
 namespaces = false  # true by default
 
+
 [tool.setuptools.dynamic]
 version = {attr = "fruit_store.__version__"}
+
 
 [tool.pdm]
 distribution = true
 
+
 [tool.pdm.dev-dependencies]
 dev = [
     "ruff>=0.1.9",
-    "pytest>=7.4.3",
-    "pytest-async>=0.1.1",
     "pyright>=1.1.343",
-    "coverage>=7.4.0",
-]
-build = [
-    "nuitka>=1.9.5",
-    "build>=1.0.3",
-]
-grpc = [
     "grpcio-tools>=1.60.0",
+]
+test = [
+    "coverage>=7.4.1",
+    "pytest>=7.4.4",
+    "pytest-asyncio>=0.23.4",
 ]
 
 
@@ -63,7 +71,14 @@ pythonpath = [
   "."
 ]
 asyncio_mode="auto"
-# required_plugins = pytest-asyncio
+required_plugins = "pytest-asyncio"
+
+
+markers = [
+    "unit: Unitary test. These must work under any circumnstance.",
+    "sql: Sql dependent test. These may require a ready sql server or use sqlite in memory",
+    "influxdb: Requires an influxdb running",
+]
 
 
 [tool.ruff.lint]
@@ -82,9 +97,11 @@ select = [
     "I",
 ]
 
+
 [tool.ruff.format]
 docstring-code-format = true
 docstring-code-line-length = 20
+
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

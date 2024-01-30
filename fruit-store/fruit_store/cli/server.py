@@ -1,15 +1,13 @@
 import asyncio
-import logging
 
 import typer
 
-from fruit_store.server import async_serve
 
-@typer.command()
-def server():
-    logging.basicConfig(level=logging.INFO)
-    asyncio.run(async_serve.serve())
+def server(host: str = "[::]:50051"):
+    from fruit_store.server import async_serve
+
+    asyncio.run(async_serve.serve(host))
 
 
 if __name__ == "__main__":
-    server()
+    typer.run(server)

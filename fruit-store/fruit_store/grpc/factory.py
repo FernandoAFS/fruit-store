@@ -1,3 +1,4 @@
+import dataclasses as dtcs
 import datetime as dt
 import math
 import typing as t
@@ -26,6 +27,32 @@ def num_to_price(price: "int | float") -> int:
     raise TypeError(f"dates must be either float or int, not {type(price)}")
 
 
+@dtcs.dataclass(frozen=True)
+class PurchaseEventModel:
+    """
+    Class that complies with the purchase event protocol and encapsulates
+    methods to generate grpc classes
+    """
+
+    date: "dt.datetime"
+    item: str
+    quantity: int
+    price: int
+
+    def to_grpc(self) -> "msg_annot.SaleEvent":
+        return sale_event(self.date, self.quantity, self.item, self.price)
+
+    @staticmethod
+    def from_grpc(ev: "msg_annot.SaleEvent") -> "PurchaseEventModel":
+        d_ = dt.datetime.fromtimestamp(ev.date)
+        return PurchaseEventModel(
+            date=d_,
+            item=ev.item,
+            quantity=ev.quantity,
+            price=ev.price,
+        )
+
+
 def sale_event(
     date: "dt.datetime | int", quantity: int, item: str, price: float | int
 ) -> "msg_annot.SaleEvent":
@@ -39,10 +66,11 @@ def sale_event(
         item=item,
     )
 
-def report_request(
-    date_0: "dt.datetime | int", date_f: "dt.datetime | int",
-) -> "msg_annot.ReportRequest":
 
+def report_request(
+    date_0: "dt.datetime | int",
+    date_f: "dt.datetime | int",
+) -> "msg_annot.ReportRequest":
     return fruit_store_pb2.ReportRequest(  # type: ignore
         date0=dt_to_ts(date_0),
         datef=dt_to_ts(date_f),
