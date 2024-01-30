@@ -42,7 +42,7 @@ def path_to_event(p: pathlib.Path):
 
     # CHECK IF ITS OBJECT OR LIST.
 
-    def d_to_event(d: "t.Mapping[str, t.Any]") -> "factory.PurchaseEventModel":
+    def d_to_event(j: "t.Mapping[str, t.Any]") -> "factory.PurchaseEventModel":
         d = dt.datetime.fromisoformat(j["date"])  # type: ignore
         return factory.PurchaseEventModel.from_dict(
             {
@@ -56,11 +56,12 @@ def path_to_event(p: pathlib.Path):
     match j:
         case list():
             yield from map(d_to_event, j)
+            return
         case dict():
             yield d_to_event(j)
             return
 
-    raise TypeError(f"Json type object {type(j)} not supported.")
+    raise TypeError(f"Json type object {type(j)} not supported: {str(j)[:200]}")
 
 
 # ADD OPTION TO SEND IN BULK OR NOT.

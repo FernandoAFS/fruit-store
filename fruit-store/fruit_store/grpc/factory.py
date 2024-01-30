@@ -1,10 +1,9 @@
 import collections
 import dataclasses as dtcs
 import datetime as dt
-import math
-import pprint
-import typing as t
 import json
+import math
+import typing as t
 
 from google.protobuf.json_format import MessageToDict
 
@@ -57,6 +56,7 @@ class ReportResponseModel:
                     return dict(zip(snake_case, conv_values, strict=False))  # type: ignore
 
             return d
+
         resp_d = MessageToDict(resp)
         if len(resp_d) <= 0:
             return ReportResponseModel({})
@@ -174,7 +174,9 @@ def report_response(d: "report_annot.ReportDict") -> "msg_annot.ReportResponse":
         response.items[item].totalQuantity = item_report["total_quantity"]
         response.items[item].averagePerSale = item_report["average_per_sale"]
 
-        response.items[item].totalRevenue = math.floor(item_report["total_revenue"])
+        response.items[item].totalRevenue = math.floor(
+            item_report["total_revenue"] / 100
+        )
         for month, monthly_report in item_report["monthly"].items():
             response.items[item].monthly[month].totalQuantity = monthly_report[
                 "total_quantity"
@@ -183,7 +185,7 @@ def report_response(d: "report_annot.ReportDict") -> "msg_annot.ReportResponse":
                 "average_per_sale"
             ]
             response.items[item].monthly[month].totalRevenue = math.floor(
-                monthly_report["total_revenue"]
+                monthly_report["total_revenue"] / 100
             )
 
     return response

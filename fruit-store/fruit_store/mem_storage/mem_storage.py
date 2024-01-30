@@ -36,7 +36,6 @@ class MemMonthItemReporting:
     revenue: float = 0
 
     def __add__(self, other) -> "MemMonthItemReporting":
-        # CHECK PROTOCOL OF OTHER
         return MemMonthItemReporting(
             quantity=self.quantity + other.quantity,
             sales=self.sales + 1,
@@ -97,7 +96,7 @@ class MemoryStorage:
     async def put_purchrase_event(
         self, event: "di_annot.PurchraseEventProtocol"
     ) -> None:
-        month = event.date.replace(tzinfo=None, day=1, hour=0, second=0, microsecond=0)
+        month = event.date.replace(tzinfo=None, day=1, hour=0, minute=0, second=0, microsecond=0)
         self.accum_[event.item][month] += event
         return None
 
