@@ -1,4 +1,5 @@
 import datetime as dt
+import pendulum as pend
 
 import hypothesis
 import hypothesis.strategies as st
@@ -6,10 +7,11 @@ import hypothesis.strategies as st
 from fruit_store.annot import reporting as report_annot
 from fruit_store.grpc import factory as grpc_factory
 
-grpc_dates_strategy = st.datetimes(
-    min_value=grpc_factory.MIN_DATE,
-    max_value=grpc_factory.MAX_DATE,
-)
+grpc_dates_strategy = st.floats(
+    min_value=grpc_factory.MIN_DATE.timestamp(),
+    max_value=grpc_factory.MAX_DATE.timestamp(),
+).map(pend.from_timestamp)
+
 
 grpc_quantity = st.integers(
     min_value=grpc_factory.MIN_QUANTITY + 1,
@@ -30,7 +32,7 @@ purchase_event_model_strategy = st.builds(
 
 
 @hypothesis.given(grpc_dates_strategy)
-def test_timestamp_encode_decode(dt_: "dt.datetime"):
+def test_timestamp_encode_decode(dt_: "pend.DateTime"):
     "Check if conversion and de-conversion to timestamp is working adequately"
     encoded_d = grpc_factory.dt_to_ts(dt_)
     decoded_d = grpc_factory.ts_to_dt(encoded_d)

@@ -1,8 +1,8 @@
 import collections
 import dataclasses as dtcs
+import pendulum as pend
 import datetime as dt
 import json
-import math
 import operator as op
 import typing as t
 
@@ -39,23 +39,25 @@ class DateTooLowError(CustomGrpcSerializationError):
     ...
 
 
-MIN_DATE = dt.datetime(year=1970, month=1, day=1)
-MAX_DATE = dt.datetime(year=2242, month=12, day=30)
+MIN_DATE = pend.datetime(year=1970, month=1, day=1)
+MAX_DATE = pend.datetime(year=2242, month=12, day=30)
 
-PRICE_DECIMALS = 1e2
-MAX_PRICE = (2**32 - 1) // 100
+PRICE_DECIMALS = int(1e2)
+MAX_PRICE = (2**32 - 1) // PRICE_DECIMALS
 MIN_PRICE = 0
 
 MAX_QUANTITY = 2**32 - 1
 MIN_QUANTITY = 0
 
 
-def dt_to_ts(date: "dt.datetime | float") -> float:
+def dt_to_ts(date: "dt.datetime | pend.DateTime | float") -> float:
     "Returns positive timestamp in miliseconds given a datetime. Assuming"
     match date:
         case float():
             ts = date
         case dt.datetime():
+            ts = pend.instance(date).timestamp()
+        case pend.DateTime():
             ts = date.timestamp()
         case _:
             raise TypeError(f"dates must be either float or datetime, not {type(date)}")
@@ -63,14 +65,15 @@ def dt_to_ts(date: "dt.datetime | float") -> float:
     return ts
 
 
-def ts_to_dt(date: "dt.datetime | float") -> "dt.datetime":
+def ts_to_dt(date: "dt.datetime | pend.DateTime | float") -> "pend.DateTime":
     ""
     match date:
         case float():
-            ts = date
-            dt_ = dt.datetime.fromtimestamp(ts)
-        case dt.datetime():
+            dt_ = pend.from_timestamp(date)
+        case pend.DateTime():
             dt_ = date
+        case dt.datetime():
+            dt_ = pend.instance(date)
         case _:
             raise TypeError(f"dates must be either float or datetime, not {type(date)}")
 
@@ -83,21 +86,30 @@ def ts_to_dt(date: "dt.datetime | float") -> "dt.datetime":
     return dt_
 
 
-def num_to_price(price: "int | float") -> int:
-    match price:
-        case int():
-            return price
-        case float():
-            return math.ceil(price * 100)
-    raise TypeError(f"dates must be either float or int, not {type(price)}")
-
-
 @dtcs.dataclass(frozen=True)
 class ReportResponseModel:
     report_dict: "report_annot.ReportDict"
 
     def to_grpc(self) -> "msg_annot.ReportResponse":
-        return report_response(self.report_dict)
+        response: "msg_annot.ReportResponse" = fruit_store_pb2.ReportResponse()  # type: ignore
+
+        for item, item_report in self.report_dict.items():
+            response.items[item].totalQuantity = item_report["total_quantity"]
+            response.items[item].averagePerSale = item_report["average_per_sale"]
+
+            response.items[item].totalRevenue = item_report["total_revenue"]
+
+            for month, monthly_report in item_report["monthly"].items():
+                response.items[item].monthly[month].totalQuantity = monthly_report[
+                    "total_quantity"
+                ]
+                response.items[item].monthly[month].averagePerSale = monthly_report[
+                    "average_per_sale"
+                ]
+                response.items[item].monthly[month].totalRevenue = monthly_report[
+                    "total_revenue"
+                ]
+        return response
 
     @staticmethod
     def from_grpc(resp: "msg_annot.ReportResponse") -> "ReportResponseModel":
@@ -154,16 +166,16 @@ class ReportResponseModel:
 
 @dtcs.dataclass(frozen=True)
 class ReportRequestModel:
-    date0: "dt.datetime | None" = None
-    datef: "dt.datetime | None" = None
+    date0: "pend.DateTime | dt.datetime | None" = None
+    datef: "pend.DateTime | dt.datetime | None" = None
 
     def to_grpc(self) -> "msg_annot.ReportRequest":
         return report_request(self.date0, self.datef)
 
     @staticmethod
     def from_grpc(ev: "msg_annot.ReportRequest") -> "ReportRequestModel":
-        d0 = dt.datetime.fromtimestamp(ev.date0)
-        df = dt.datetime.fromtimestamp(ev.datef)
+        d0 = pend.from_timestamp(ev.date0)
+        df = pend.from_timestamp(ev.datef)
         return ReportRequestModel(
             date0=d0,
             datef=df,
@@ -177,10 +189,10 @@ class PurchaseEventModel:
     methods to generate grpc classes
     """
 
-    date: "dt.datetime"
+    date: "pend.DateTime"
     item: str
     quantity: int
-    price: int
+    price: float
 
     def to_grpc(self) -> "msg_annot.SaleEvent":
         if self.quantity <= MIN_QUANTITY:
@@ -210,7 +222,7 @@ class PurchaseEventModel:
     @staticmethod
     def from_grpc(ev: "msg_annot.SaleEvent") -> "PurchaseEventModel":
         d_ = ts_to_dt(ev.date)
-        price_ = ev.price // PRICE_DECIMALS
+        price_ = int(ev.price // PRICE_DECIMALS)
         return PurchaseEventModel(
             date=d_,
             item=ev.item,
@@ -220,12 +232,14 @@ class PurchaseEventModel:
 
     @staticmethod
     def from_dict(d: "t.Mapping[str, t.Any]") -> "PurchaseEventModel":
-        return PurchaseEventModel(**d)
+        return PurchaseEventModel(
+            **d,
+        )
 
 
 def report_request(
-    date_0: "dt.datetime | float | None",
-    date_f: "dt.datetime | float | None",
+    date_0: "dt.datetime | pend.DateTime | float | None",
+    date_f: "dt.datetime | pend.DateTime | float | None",
 ) -> "msg_annot.ReportRequest":
     d = {}
     if date_0 is not None:
@@ -234,27 +248,3 @@ def report_request(
         d["datef"] = dt_to_ts(date_f)
 
     return fruit_store_pb2.ReportRequest(**d)  # type: ignore
-
-
-def report_response(d: "report_annot.ReportDict") -> "msg_annot.ReportResponse":
-    response: "msg_annot.ReportResponse" = fruit_store_pb2.ReportResponse()  # type: ignore
-
-    for item, item_report in d.items():
-        response.items[item].totalQuantity = item_report["total_quantity"]
-        response.items[item].averagePerSale = item_report["average_per_sale"]
-
-        response.items[item].totalRevenue = math.floor(
-            item_report["total_revenue"] / 100
-        )
-        for month, monthly_report in item_report["monthly"].items():
-            response.items[item].monthly[month].totalQuantity = monthly_report[
-                "total_quantity"
-            ]
-            response.items[item].monthly[month].averagePerSale = monthly_report[
-                "average_per_sale"
-            ]
-            response.items[item].monthly[month].totalRevenue = math.floor(
-                monthly_report["total_revenue"] / 100
-            )
-
-    return response
