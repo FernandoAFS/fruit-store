@@ -9,14 +9,14 @@ ReportDict: t.TypeAlias = "t.Mapping[str, ItemReportDict]"
 class ItemReportDict(t.TypedDict):
     total_quantity: int
     average_per_sale: int
-    total_revenue: float
+    total_revenue: int
     monthly: t.Mapping[str, "ItemMonthlyReportDict"]
 
 
 class ItemMonthlyReportDict(t.TypedDict):
     total_quantity: int
     average_per_sale: int
-    total_revenue: float
+    total_revenue: int
 
 
 class ReportFactoryProtocol(t.Protocol):

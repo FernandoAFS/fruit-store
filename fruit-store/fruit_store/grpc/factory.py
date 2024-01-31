@@ -1,13 +1,14 @@
 import collections
 import dataclasses as dtcs
-import pendulum as pend
 import datetime as dt
 import json
 import operator as op
 import typing as t
 
+import pendulum as pend
 from google.protobuf.json_format import MessageToDict
 
+from fruit_store.environment import constants as ct
 from fruit_store.util import casing
 
 from . import fruit_store_pb2
@@ -42,8 +43,7 @@ class DateTooLowError(CustomGrpcSerializationError):
 MIN_DATE = pend.datetime(year=1970, month=1, day=1)
 MAX_DATE = pend.datetime(year=2242, month=12, day=30)
 
-PRICE_DECIMALS = int(1e2)
-MAX_PRICE = (2**32 - 1) // PRICE_DECIMALS
+MAX_PRICE = (2**32 - 1) // ct.PRICE_DECIMALS
 MIN_PRICE = 0
 
 MAX_QUANTITY = 2**32 - 1
@@ -84,6 +84,20 @@ def ts_to_dt(date: "dt.datetime | pend.DateTime | float") -> "pend.DateTime":
         raise DateTooLowError("Date should be above: f{MIN_DATE}")
 
     return dt_
+
+
+def num_to_price(num: float | int) -> int:
+    match num:
+        case int():
+            return num
+        case float():
+            return int(num * ct.PRICE_DECIMALS)
+
+    raise TypeError("num must be either float or int")
+
+
+def price_to_num(price: int) -> float:
+    return price / ct.PRICE_DECIMALS
 
 
 @dtcs.dataclass(frozen=True)
@@ -136,14 +150,14 @@ class ReportResponseModel:
             od = collections.OrderedDict()
             od["total_quantity"] = d["total_quantity"]
             od["average_per_sale"] = d["average_per_sale"]
-            od["total_revenue"] = d["total_revenue"]
+            od["total_revenue"] = int(d["total_revenue"] / ct.PRICE_DECIMALS)
             return od
 
         def present_item_report(d: "report_annot.ItemReportDict"):
             od = collections.OrderedDict()
             od["total_quantity"] = d["total_quantity"]
             od["average_per_sale"] = d["average_per_sale"]
-            od["total_revenue"] = d["total_revenue"]
+            od["total_revenue"] = int(d["total_revenue"] / ct.PRICE_DECIMALS)
 
             sorted_monthly = sorted(d["monthly"].items(), key=op.itemgetter(0))
             sorted_months = map(op.itemgetter(0), sorted_monthly)
@@ -192,7 +206,7 @@ class PurchaseEventModel:
     date: "pend.DateTime"
     item: str
     quantity: int
-    price: float
+    price: int
 
     def to_grpc(self) -> "msg_annot.SaleEvent":
         if self.quantity <= MIN_QUANTITY:
@@ -210,7 +224,7 @@ class PurchaseEventModel:
             )
 
         ts = dt_to_ts(self.date)
-        price_ = int(self.price * PRICE_DECIMALS)  # CONVER CURRENCY TO CENTS.
+        price_ = int(self.price * ct.PRICE_DECIMALS)  # CONVER CURRENCY TO CENTS.
 
         return fruit_store_pb2.SaleEvent(  # type: ignore
             date=ts,
@@ -222,12 +236,11 @@ class PurchaseEventModel:
     @staticmethod
     def from_grpc(ev: "msg_annot.SaleEvent") -> "PurchaseEventModel":
         d_ = ts_to_dt(ev.date)
-        price_ = int(ev.price // PRICE_DECIMALS)
         return PurchaseEventModel(
             date=d_,
             item=ev.item,
             quantity=ev.quantity,
-            price=price_,
+            price=ev.price,
         )
 
     @staticmethod
