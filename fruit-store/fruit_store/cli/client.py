@@ -1,11 +1,12 @@
 import asyncio
 import datetime as dt
+import decimal
 import itertools as it
 import json
 import math
 import pathlib
 import typing as t
-import decimal
+from glob import glob
 
 import typer
 
@@ -46,11 +47,7 @@ def path_to_event(p: pathlib.Path):
     def d_to_event(j: "t.Mapping[str, t.Any]") -> "factory.PurchaseEventModel":
         d = dt.datetime.fromisoformat(j["date"])  # type: ignore
         return factory.PurchaseEventModel.from_dict(
-            {
-                **j,
-                "date": d,
-                "price": decimal.Decimal(str(j["price"]))
-            }
+            {**j, "date": d, "price": decimal.Decimal(str(j["price"]))}
         )
 
     # ITS' SAFE TO ASSUME BASIC COLLECTIONS AS LONG AS WE ARE USING STANDARD
@@ -68,14 +65,15 @@ def path_to_event(p: pathlib.Path):
 
 # ADD OPTION TO SEND IN BULK OR NOT.
 @app.command()
-def purchase_event_json(files: list[pathlib.Path]):
+def purchase_event_json(files: list[str]):
     """
     Convenience method that inputs multiple json files and sends them as events
     """
     from fruit_store.client import client as grpc_client
 
     client_ = grpc_client.FruitStoreClient(app_state["host"])
-    events = it.chain.from_iterable(map(path_to_event, files))
+    paths = it.chain.from_iterable(map(glob, files))
+    events = it.chain.from_iterable(map(path_to_event, map(pathlib.Path, paths)))
 
     # TODO: MAYBE USE BETTER WAY. BATCH REQUESTS OR EVEN DO GRPC STREAM
     for ev in events:
