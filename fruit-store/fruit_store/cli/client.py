@@ -5,6 +5,7 @@ import json
 import math
 import pathlib
 import typing as t
+import decimal
 
 import typer
 
@@ -48,6 +49,7 @@ def path_to_event(p: pathlib.Path):
             {
                 **j,
                 "date": d,
+                "price": decimal.Decimal(str(j["price"]))
             }
         )
 

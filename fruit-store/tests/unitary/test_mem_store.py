@@ -115,7 +115,6 @@ async def test_mem_store_report(
 
     N_EVENTS = 10
     events = list(it.islice(purchase_event_iter(), N_EVENTS))
-    print(events)
 
     # SIMPLY FEED ALL THE EVENTS ONE BY ONE. IT'S FINE SINCE THE METHOD IS
     # SYNCHRONOUS, USE ASYNCIO.GATHER OTHERWISE

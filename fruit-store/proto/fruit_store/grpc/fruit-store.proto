@@ -36,14 +36,14 @@ message ReportResponse{
 }
 
 message ReportItem{
-    uint64 totalQuantity = 1;
-    uint64 averagePerSale = 2;
-    uint64 totalRevenue = 3;
+    uint32 totalQuantity = 1;
+    uint32 averagePerSale = 2;
+    uint32 totalRevenue = 3;
     map<string, ReportItemMonthly> monthly = 4;
 }
 
 message ReportItemMonthly{
-    uint64 totalQuantity = 1;
-    uint64 averagePerSale = 2;
-    uint64 totalRevenue = 3;
+    uint32 totalQuantity = 1;
+    uint32 averagePerSale = 2;
+    uint32 totalRevenue = 3;
 }
