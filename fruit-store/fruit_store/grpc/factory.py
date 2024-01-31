@@ -3,6 +3,7 @@ import dataclasses as dtcs
 import datetime as dt
 import json
 import math
+import operator as op
 import typing as t
 
 from google.protobuf.json_format import MessageToDict
@@ -77,10 +78,14 @@ class ReportResponseModel:
             od["average_per_sale"] = d["average_per_sale"]
             od["total_revenue"] = d["total_revenue"]
 
-            months = d["monthly"].keys()
-            month_reports = map(present_month_report, d["monthly"].values())
+            sorted_monthly = sorted(d["monthly"].items(), key=op.itemgetter(0))
+            sorted_months = map(op.itemgetter(0), sorted_monthly)
+            sorted_month_reports = map(op.itemgetter(1), sorted_monthly)
+            sorted_prsented_months = map(present_month_report, sorted_month_reports)
 
-            od["monthly"] = dict(zip(months, month_reports, strict=True))
+            od["monthly"] = dict(
+                zip(sorted_months, sorted_prsented_months, strict=True)
+            )
 
             return od
 
