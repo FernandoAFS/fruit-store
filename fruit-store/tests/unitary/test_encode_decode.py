@@ -3,6 +3,7 @@ import datetime as dt
 import hypothesis
 import hypothesis.strategies as st
 
+from fruit_store.annot import reporting as report_annot
 from fruit_store.grpc import factory as grpc_factory
 
 grpc_dates_strategy = st.datetimes(
@@ -10,14 +11,21 @@ grpc_dates_strategy = st.datetimes(
     max_value=grpc_factory.MAX_DATE,
 )
 
+grpc_quantity = st.integers(
+    min_value=grpc_factory.MIN_QUANTITY + 1,
+    max_value=grpc_factory.MAX_QUANTITY - 1,
+)
+
+grpc_price = st.integers(
+    min_value=grpc_factory.MIN_PRICE + 1,
+    max_value=grpc_factory.MAX_PRICE - 1,
+)
+
 purchase_event_model_strategy = st.builds(
     grpc_factory.PurchaseEventModel,
     date=grpc_dates_strategy,
-    quantity=st.integers(min_value=1, max_value=(2**32 - 1)),
-    price=st.integers(
-        #allow_nan=False, allow_infinity=False,
-        min_value=1, max_value=(2**32 - 1) // 100
-    ),
+    quantity=grpc_quantity,
+    price=grpc_price,
 )
 
 
@@ -34,3 +42,4 @@ def test_event_encode_decode(purchase_event_model: "grpc_factory.PurchaseEventMo
     grpc_model = purchase_event_model.to_grpc()
     back_convert = grpc_factory.PurchaseEventModel.from_grpc(grpc_model)
     assert back_convert == purchase_event_model
+
