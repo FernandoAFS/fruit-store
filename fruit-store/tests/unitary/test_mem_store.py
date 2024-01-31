@@ -115,6 +115,7 @@ async def test_mem_store_report(
 
     N_EVENTS = 10
     events = list(it.islice(purchase_event_iter(), N_EVENTS))
+    print(events)
 
     # SIMPLY FEED ALL THE EVENTS ONE BY ONE. IT'S FINE SINCE THE METHOD IS
     # SYNCHRONOUS, USE ASYNCIO.GATHER OTHERWISE
@@ -144,7 +145,7 @@ async def test_mem_store_report(
     for item, item_events in group_items():
         items = list(item_events)  # ITEM LIST IS AN ITERABLE
         prices = map(op.attrgetter("price"), items)
-        quantities = map(op.attrgetter("quantity"), items)
+        quantities = list(map(op.attrgetter("quantity"), items))
         events_revenue = sum(map(op.mul, prices, quantities))
         report_revenue = report[item]["total_revenue"]
         assert events_revenue == report_revenue, f"Item {item}, revenue mismatch"
