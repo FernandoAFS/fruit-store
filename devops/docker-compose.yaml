@@ -1,0 +1,45 @@
+x-healthcheck-common: &hc-common
+  interval: 5s
+  timeout: 10s
+  retries: 3
+  start_period: 10s
+
+version: "3.1"
+services:
+
+  server:
+    image: fruit-store-server:latest
+    ports:
+      - "50051:50051"
+    healthcheck:
+      test: "fruit-store client healthcheck"
+      <<: *hc-common
+
+  load:
+    image: fruit-store-client:latest
+    profiles:
+      - load
+    command:
+      - "client"
+      - "--host"
+      - "server:50051"
+      - "purchase-event-json"
+      - "/var/data/**/**/**/*.json"
+    volumes:
+      - "./input-data/data/:/var/data"
+    depends_on:
+      server:
+        condition: service_healthy
+
+  report:
+    image: fruit-store-client:latest
+    profiles:
+      - report
+    command:
+      - "client"
+      - "--host"
+      - "server:50051"
+      - "request-report"
+    depends_on:
+      server:
+        condition: service_healthy

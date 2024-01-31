@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-USER="fruit-store:fruit-store"
+USER=${USER:-"fruit-store:fruit-store"}
 CMD="fruit-store"
 
 # SERVER RUNNING UNPRIVILEDGED
@@ -25,12 +25,12 @@ fi
 # TODO: INCLUDE BOOTSTRAPING SCRIPTS IF ONE MUST
 #DATA_PATHS="/var/db"
 
-#for d in $DATA_PATHS
-#do
-#    if [ -d "$d" ]; then
-#        chown "$USER" "$d"
-#    fi
-#done
+for d in $DATA_PATHS
+do
+    if [ -d "$d" ]; then
+        chown "$USER" "$d"
+    fi
+done
 
 # check for the expected command
 if [ "$1" = 'server' ]; then
