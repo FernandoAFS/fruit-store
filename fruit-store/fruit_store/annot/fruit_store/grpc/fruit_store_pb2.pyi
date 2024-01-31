@@ -15,11 +15,11 @@ class SaleEvent(_message.Message):
     QUANTITY_FIELD_NUMBER: _ClassVar[int]
     ITEM_FIELD_NUMBER: _ClassVar[int]
     PRICE_FIELD_NUMBER: _ClassVar[int]
-    date: int
+    date: float
     quantity: int
     item: str
     price: int
-    def __init__(self, date: _Optional[int] = ..., quantity: _Optional[int] = ..., item: _Optional[str] = ..., price: _Optional[int] = ...) -> None: ...
+    def __init__(self, date: _Optional[float] = ..., quantity: _Optional[int] = ..., item: _Optional[str] = ..., price: _Optional[int] = ...) -> None: ...
 
 class SaleReply(_message.Message):
     __slots__ = ("code",)
@@ -31,9 +31,9 @@ class ReportRequest(_message.Message):
     __slots__ = ("date0", "datef")
     DATE0_FIELD_NUMBER: _ClassVar[int]
     DATEF_FIELD_NUMBER: _ClassVar[int]
-    date0: int
-    datef: int
-    def __init__(self, date0: _Optional[int] = ..., datef: _Optional[int] = ...) -> None: ...
+    date0: float
+    datef: float
+    def __init__(self, date0: _Optional[float] = ..., datef: _Optional[float] = ...) -> None: ...
 
 class ReportResponse(_message.Message):
     __slots__ = ("items",)

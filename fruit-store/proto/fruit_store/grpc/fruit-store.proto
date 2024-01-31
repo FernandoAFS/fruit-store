@@ -16,7 +16,7 @@ service Server{
 }
 
 message SaleEvent{
-    uint64 date = 1;
+    double date = 1;
     uint32 quantity = 2;
     string item = 3;
     uint32 price = 4;
@@ -27,8 +27,8 @@ message SaleReply{
 }
 
 message ReportRequest{
-    optional uint64 date0 = 1;
-    optional uint64 datef = 2;
+    optional double date0 = 1;
+    optional double datef = 2;
 }
 
 message ReportResponse{

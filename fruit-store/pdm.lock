@@ -5,7 +5,7 @@
 groups = ["default", "dev", "sql", "sqlite", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:ad8464af717645652553d1474c55cfc2e1e135287a4249cf1eb368be2f66e212"
+content_hash = "sha256:82ea12f99d8b7c79c26123495733e96d0cded289e1ea00ba2e6b7abee53437c0"
 
 [[package]]
 name = "aiosqlite"
@@ -16,6 +16,17 @@ groups = ["sqlite"]
 files = [
     {file = "aiosqlite-0.19.0-py3-none-any.whl", hash = "sha256:edba222e03453e094a3ce605db1b970c4b3376264e56f32e2a4959f948d66a96"},
     {file = "aiosqlite-0.19.0.tar.gz", hash = "sha256:95ee77b91c8d2808bd08a59fbebf66270e9090c3d92ffbf260dc0db0b979577d"},
+]
+
+[[package]]
+name = "attrs"
+version = "23.2.0"
+requires_python = ">=3.7"
+summary = "Classes Without Boilerplate"
+groups = ["test"]
+files = [
+    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
+    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
 ]
 
 [[package]]
@@ -166,6 +177,21 @@ files = [
 ]
 
 [[package]]
+name = "hypothesis"
+version = "6.97.3"
+requires_python = ">=3.8"
+summary = "A library for property-based testing"
+groups = ["test"]
+dependencies = [
+    "attrs>=22.2.0",
+    "sortedcontainers<3.0.0,>=2.1.0",
+]
+files = [
+    {file = "hypothesis-6.97.3-py3-none-any.whl", hash = "sha256:6256d768ec866426bfce6ed78418c6e3e43119a0dbece2e0229a1ae5929ae53d"},
+    {file = "hypothesis-6.97.3.tar.gz", hash = "sha256:00216ddadaee17ba73451e262f973970a97d34fd75ec34ef57510147264c34d1"},
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.0.0"
 requires_python = ">=3.7"
@@ -308,6 +334,16 @@ groups = ["dev"]
 files = [
     {file = "setuptools-69.0.3-py3-none-any.whl", hash = "sha256:385eb4edd9c9d5c17540511303e39a147ce2fc04bc55289c322b9e5904fe2c05"},
     {file = "setuptools-69.0.3.tar.gz", hash = "sha256:be1af57fc409f93647f2e8e4573a142ed38724b8cdd389706a867bb4efcf1e78"},
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+summary = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
+groups = ["test"]
+files = [
+    {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
+    {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 
 [[package]]

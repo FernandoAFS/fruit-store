@@ -44,6 +44,7 @@ namespaces = false  # true by default
 version = {attr = "fruit_store.__version__"}
 
 
+
 [tool.pdm]
 distribution = true
 
@@ -58,6 +59,7 @@ test = [
     "coverage>=7.4.1",
     "pytest>=7.4.4",
     "pytest-asyncio>=0.23.4",
+    "hypothesis>=6.97.3",
 ]
 
 

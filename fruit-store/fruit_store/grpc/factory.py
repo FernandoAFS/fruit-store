@@ -19,13 +19,68 @@ if t.TYPE_CHECKING:
 T = t.TypeVar("T")
 
 
-def dt_to_ts(date: "dt.datetime | int") -> int:
+class CustomGrpcSerializationError(TypeError):
+    ...
+
+
+class SaleEventQuantityError(CustomGrpcSerializationError):
+    ...
+
+
+class SaleEventPriceError(CustomGrpcSerializationError):
+    ...
+
+
+class DateTooHighError(CustomGrpcSerializationError):
+    ...
+
+
+class DateTooLowError(CustomGrpcSerializationError):
+    ...
+
+
+MIN_DATE = dt.datetime(year=1970, month=1, day=1)
+MAX_DATE = dt.datetime(year=2242, month=12, day=30)
+
+PRICE_DECIMALS = 1e2
+MAX_PRICE = (2**32 - 1) // 100
+MIN_PRICE = 0
+
+MAX_QUANTITY = 2**32 - 1
+MIN_QUANTITY = 0
+
+
+def dt_to_ts(date: "dt.datetime | float") -> float:
+    "Returns positive timestamp in miliseconds given a datetime. Assuming"
     match date:
-        case int():
-            return date
+        case float():
+            ts = date
         case dt.datetime():
-            return math.floor(date.timestamp())
-    raise TypeError(f"dates must be either int or datetime, not {type(date)}")
+            ts = date.timestamp()
+        case _:
+            raise TypeError(f"dates must be either float or datetime, not {type(date)}")
+
+    return ts
+
+
+def ts_to_dt(date: "dt.datetime | float") -> "dt.datetime":
+    ""
+    match date:
+        case float():
+            ts = date
+            dt_ = dt.datetime.fromtimestamp(ts)
+        case dt.datetime():
+            dt_ = date
+        case _:
+            raise TypeError(f"dates must be either float or datetime, not {type(date)}")
+
+    if dt_ > MAX_DATE:
+        raise DateTooHighError("Date should be below: f{MAX_DATE}")
+
+    if dt_ < MIN_DATE:
+        raise DateTooLowError("Date should be above: f{MIN_DATE}")
+
+    return dt_
 
 
 def num_to_price(price: "int | float") -> int:
@@ -128,16 +183,39 @@ class PurchaseEventModel:
     price: int
 
     def to_grpc(self) -> "msg_annot.SaleEvent":
-        return sale_event(self.date, self.quantity, self.item, self.price)
+        if self.quantity <= MIN_QUANTITY:
+            raise SaleEventQuantityError("Sale event quantity must always be above 0")
+        if self.price <= MIN_PRICE:
+            raise SaleEventPriceError("Sale event price must always be above 0")
+
+        if self.quantity >= MAX_QUANTITY:
+            raise SaleEventQuantityError(
+                "Sale event quantity must always be below f{MAX_QUANTITY}"
+            )
+        if self.price >= MAX_PRICE:
+            raise SaleEventPriceError(
+                "Sale event quantity must always be below f{MAX_PRICE}"
+            )
+
+        ts = dt_to_ts(self.date)
+        price_ = int(self.price * PRICE_DECIMALS)  # CONVER CURRENCY TO CENTS.
+
+        return fruit_store_pb2.SaleEvent(  # type: ignore
+            date=ts,
+            price=price_,
+            quantity=int(self.quantity),
+            item=self.item,
+        )
 
     @staticmethod
     def from_grpc(ev: "msg_annot.SaleEvent") -> "PurchaseEventModel":
-        d_ = dt.datetime.fromtimestamp(ev.date)
+        d_ = ts_to_dt(ev.date)
+        price_ = ev.price // PRICE_DECIMALS
         return PurchaseEventModel(
             date=d_,
             item=ev.item,
             quantity=ev.quantity,
-            price=ev.price,
+            price=price_,
         )
 
     @staticmethod
@@ -145,23 +223,9 @@ class PurchaseEventModel:
         return PurchaseEventModel(**d)
 
 
-def sale_event(
-    date: "dt.datetime | int", quantity: int, item: str, price: float | int
-) -> "msg_annot.SaleEvent":
-    ts = dt_to_ts(date)
-    price_ = math.ceil(price * 100)  # CONVER CURRENCY TO CENTS.
-
-    return fruit_store_pb2.SaleEvent(  # type: ignore
-        date=ts,
-        price=price_,
-        quantity=quantity,
-        item=item,
-    )
-
-
 def report_request(
-    date_0: "dt.datetime | int | None",
-    date_f: "dt.datetime | int | None",
+    date_0: "dt.datetime | float | None",
+    date_f: "dt.datetime | float | None",
 ) -> "msg_annot.ReportRequest":
     d = {}
     if date_0 is not None:
